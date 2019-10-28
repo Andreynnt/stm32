@@ -49,22 +49,55 @@ main									; Основная подпрограмма
 	
 	MOV		R4, #0
 	
-loop1
+mainLoop
 	CMP 	R4, #0
 	BEQ		case0
 	CMP 	R4, #1
 	BEQ		case1
-	
+    CMP     R4, #2
+    BEQ     case2
+    CMP     R4, #3
+    BEQ     case3
+    CMP     R4, #4
+    BEQ     case4
+    CMP     R4, #5
+    BEQ     case5
+    CMP     R4, #6
+    BEQ     case6
+    CMP     R4, #7
+    BEQ     case7
+    CMP     R4, #8
+    BEQ     case8
+    CMP     R4, #9
+    BEQ     case9
+    CMP     R4, #10
+    BEQ     case10
+    CMP     R4, #11
+    BEQ     case11
+    CMP     R4, #12
+    BEQ     case12
+    CMP     R4, #13
+    BEQ     case13
+    CMP     R4, #14
+    BEQ     case14
+    CMP     R4, #15
+    BEQ     case15
+    CMP     R4, #16
+    BEQ     case16
+    CMP     R4, #17
+    BEQ     case17
+    CMP     R4, #18
+    BEQ     case18
+    CMP     R4, #19
+    BEQ     case19
+    CMP     R4, #20
+    BEQ     case20
 
 	LDR		R5, =DELAY_VAL
+
 case0
-	MOV32	R1, GPIOB_BSRR				
-	MOV		R2, #(PIN0 << 16)	
-	STR 	R2, [R1]
-	MOV 	R2, #(PIN1)					
-	STR 	R2, [R1]
-	
-	
+    BL turnOnZeroKatodAndTurnOffSecondKatod
+
 	MOV32	R1, GPIOA_BSRR				; адрес порта выходных сигналов
 	MOV		R2, #(PIN4 << 16 | PIN5 << 16)
 	STR 	R2, [R1]
@@ -80,16 +113,9 @@ case0
 	STR 	R2, [R1]
 	MOV 	R2, #(PIN6)					; устанавливаем вывод в '1'
 	STR 	R2, [R1]
-	
 	BL		delay
-	
-	MOV32	R1, GPIOB_BSRR
-	
-	MOV		R2, #(PIN1 << 16)
-	STR 	R2, [R1]
-	MOV 	R2, #(PIN0)					
-	STR 	R2, [R1]
-	
+
+    BL turnOffFirstCatodAndTurnONSecondKatod
 	
 	MOV32	R1, GPIOA_BSRR				; адрес порта выходных сигналов
 	MOV		R2, #(PIN1 << 16|PIN2 << 16|PIN3 << 16|PIN4 << 16|PIN5 << 16|PIN6 << 16)
@@ -98,23 +124,18 @@ case0
 	STR 	R2, [R1]					; загружаем в порт
 	MOV 	R2, #(PIN5)					; устанавливаем вывод в '1'
 	STR 	R2, [R1]
-
 	BL		delay
 
 	SUBS	R5, #1
 	IT		NE
 	BNE		case0
-	
-	MOV		R4, #1
-	B		loop1
 
+	MOV		R4, #1
+	B		mainLoop
 	LDR		R5, =DELAY_VAL
+
 case1
-	MOV32	R1, GPIOB_BSRR				
-	MOV		R2, #(PIN0 << 16)	
-	STR 	R2, [R1]
-	MOV 	R2, #(PIN1)					
-	STR 	R2, [R1]	
+    BL turnOnZeroKatodAndTurnOffSecondKatod
 	
 	MOV32	R1, GPIOA_BSRR				; адрес порта выходных сигналов
 	MOV		R2, #(PIN2 << 16 | PIN3 << 16 | PIN5 << 16 | PIN6 << 16 | PIN7 << 16)
@@ -131,16 +152,9 @@ case1
 	STR 	R2, [R1]
 	MOV 	R2, #(PIN6)					; устанавливаем вывод в '1'
 	STR 	R2, [R1]
-	
 	BL		delay
 	
-	MOV32	R1, GPIOB_BSRR
-	
-	MOV		R2, #(PIN1 << 16)
-	STR 	R2, [R1]
-	MOV 	R2, #(PIN0)					
-	STR 	R2, [R1]
-	
+    BL turnOffZeroKatodAndTurnOffSecondKatod
 	
 	MOV32	R1, GPIOA_BSRR				; адрес порта выходных сигналов
 	MOV		R2, #(PIN1 << 16|PIN2 << 16|PIN3 << 16|PIN4 << 16|PIN5 << 16|PIN6 << 16)
@@ -154,18 +168,17 @@ case1
 	MOV 	R2, #(PIN6)					
 	STR 	R2, [R1]
 	MOV 	R2, #(PIN7)					
-	STR 	R2, [R1]					
-
+	STR 	R2, [R1]
 	BL		delay
 
 	SUBS	R5, #1
 	IT		NE
 	BNE		case1
 	
-	
-	B		loop1
+	B		mainLoop
 	ENDP
 		
+
 delay        PROC                        ; Подпрограмма задержки
                                         ; Загружаем в стек R0, т.к. его значение будем менять
     LDR     R3, =DELAY_VAL1                ; псевдоинструкция Thumb (загрузить константу в регистр)
@@ -178,3 +191,21 @@ delay_loop
     ENDP
 		
     END
+
+turnOnZeroKatodAndTurnOffSecondKatod    PROC
+    MOV32    R1, GPIOB_BSRR
+    MOV      R2, #(PIN0 << 16)
+    STR      R2, [R1]
+    MOV      R2, #(PIN1)
+    STR      R2, [R1]
+    BX       LR                            ; выход из подпрограммы (переход к адресу в регистре LR - вершина стека)
+    ENDP
+
+turnOffFirstCatodAndTurnONSecondKatod    PROC
+    MOV32    R1, GPIOB_BSRR
+    MOV      R2, #(PIN1 << 16)
+    STR      R2, [R1]
+    MOV      R2, #(PIN0)
+    STR      R2, [R1]
+    BX       LR                            ; выход из подпрограммы (переход к адресу в регистре LR - вершина стека)
+    ENDP
